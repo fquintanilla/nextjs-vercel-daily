@@ -1,6 +1,12 @@
+import TrendingArticles from "@/components/trending-articles";
 import Link from "next/link";
+import { Suspense } from "react";
 
-export default function ArticleDetailPage() {
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export default async function ArticleDetailPage({ params }: Props) {
   const isSubscribed = false;
 
   return (
@@ -168,59 +174,9 @@ export default function ArticleDetailPage() {
 
         {/* Trending */}
         <aside className="lg:pt-2">
-          <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold tracking-tight text-neutral-950">
-                Trending
-              </h2>
-              <Link
-                href="/search"
-                className="text-xs font-semibold text-neutral-700 underline-offset-4 hover:underline"
-              >
-                View all
-              </Link>
-            </div>
-
-            <ul className="mt-4 space-y-3">
-              {[
-                {
-                  title:
-                    "Building secure AI agents with a defense-in-depth approach",
-                  date: "Jan 12, 2026",
-                  category: "Engineering",
-                },
-                {
-                  title:
-                    "Edge caching strategies that improve TTFB without sacrificing freshness",
-                  date: "Jan 09, 2026",
-                  category: "Platform",
-                },
-                {
-                  title:
-                    "From prototype to production: shipping polished UX faster",
-                  date: "Jan 04, 2026",
-                  category: "Product",
-                },
-                {
-                  title:
-                    "Middleware patterns for access control without the footguns",
-                  date: "Jan 02, 2026",
-                  category: "Security",
-                },
-              ].map((t, idx) => (
-                <li key={idx} className="group">
-                  <Link href="/articles/example-slug" className="block">
-                    <p className="line-clamp-2 text-sm font-semibold text-neutral-950 group-hover:underline underline-offset-4">
-                      {t.title}
-                    </p>
-                    <p className="mt-1 text-xs text-neutral-600">
-                      {t.date} • {t.category}
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <Suspense fallback={<div>Loading...</div>}>
+            <TrendingArticles params={params} />
+          </Suspense>
         </aside>
       </div>
     </main>

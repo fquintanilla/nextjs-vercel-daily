@@ -82,6 +82,18 @@ type ApiErrorResponse = {
   error?: { code: string; message: string; details: unknown };
 };
 
+async function apiGet<T>(url: string): Promise<T | null> {
+  const res = await fetch(url, {
+    method: "GET",
+    headers: { "x-vercel-protection-bypass": getToken() },
+    // Randomized endpoints should not cache
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+  return (await res.json()) as T;
+}
+
 export async function listArticles(params?: {
   page?: number;
   limit?: number;
@@ -91,9 +103,7 @@ export async function listArticles(params?: {
 }): Promise<{ articles: Article[]; meta?: ArticlesResponse["meta"] }> {
   "use cache";
   cacheLife("featuredArticles");
-
   const url = new URL(`${API_BASE}/articles`);
-
   if (params?.page) url.searchParams.set("page", String(params.page));
   if (params?.limit) url.searchParams.set("limit", String(params.limit));
   if (params?.category) url.searchParams.set("category", params.category);
@@ -101,20 +111,50 @@ export async function listArticles(params?: {
   if (typeof params?.featured === "boolean") {
     url.searchParams.set("featured", params.featured ? "true" : "false");
   }
-
-  const res = await fetch(url.toString(), {
-    method: "GET",
-    headers: { "x-vercel-protection-bypass": getToken() },
-    // Safe default: always fetch fresh for now
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
+  const json = await apiGet<ArticlesResponse | ApiErrorResponse>(
+    url.toString(),
+  );
+  if (!json || !("success" in json) || json.success === false) {
     return { articles: [] };
   }
-
-  const json = (await res.json()) as ArticlesResponse | ApiErrorResponse;
-  if (!("success" in json) || json.success === false) return { articles: [] };
-
   return { articles: json.data, meta: json.meta };
 }
+
+type ArticleResponse = { success: true; data: Article } | ApiErrorResponse;
+type TrendingResponse = { success: true; data: Article[] } | ApiErrorResponse;
+
+export async function getArticle(idOrSlug: string): Promise<Article | null> {
+  const json = await apiGet<ArticleResponse>(
+    `${API_BASE}/articles/${encodeURIComponent(idOrSlug)}`,
+  );
+
+  if (!json || json.success === false) return null;
+  return json.data;
+}
+
+export async function getTrendingArticles(params?: {
+  excludeIds?: string[];
+}): Promise<Article[]> {
+  const url = new URL(`${API_BASE}/articles/trending`);
+
+  if (params?.excludeIds?.length) {
+    url.searchParams.set("exclude", params.excludeIds.join(","));
+  }
+
+  const json = await apiGet<TrendingResponse>(url.toString());
+  if (!json || json.success === false) return [];
+  return json.data;
+}
+
+export type ArticleCategory =
+  | "changelog"
+  | "engineering"
+  | "customers"
+  | "company-news"
+  | "community";
+
+export type ArticleContentBlock =
+  | { type: "paragraph"; text: string }
+  | { type: "heading"; text: string }
+  | { type: "quote"; text: string }
+  | { type: "list"; items: string[] };
