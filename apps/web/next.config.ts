@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "i8qy5y6gxkdgdcv9.public.blob.vercel-storage.com",
+        pathname: "/**",
+      },
     ],
   },
   cacheComponents: true, // Top-level in Next.js 16.1.x+
@@ -16,6 +21,11 @@ const nextConfig: NextConfig = {
       stale: 3600, // 1 hour
       revalidate: 86400, // 24 hours
       expire: 604800, // 1 week
+    },
+    featuredArticles: {
+      stale: 600, // 10 minutes
+      revalidate: 900, // 1 minutes
+      expire: 86400, // 24 hours
     },
   },
 };
