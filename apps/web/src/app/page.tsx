@@ -1,21 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
+import BreakingNewsBanner from "@/components/breaking-news-banner";
+import { Suspense } from "react";
 
 type Article = {
   id: string;
   slug: string;
   title: string;
   category: string;
-  publishedAt: string; // ISO string
+  publishedAt: string;
   image: {
     src: string;
     alt: string;
   };
-};
-
-const mockBreaking = {
-  label: "Breaking",
-  headline: "Edge caching patterns are reshaping server-rendered UX in 2026",
 };
 
 const mockFeatured: Article[] = [
@@ -97,23 +94,12 @@ function formatDate(iso: string) {
   });
 }
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <main className="min-h-dvh bg-white text-neutral-950">
-      {/* Breaking News Banner */}
-      <section className="border-b border-neutral-200 bg-neutral-950 text-white">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2">
-          <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-1 text-xs font-semibold uppercase tracking-wide">
-            {mockBreaking.label}
-          </span>
-          <p className="truncate text-sm text-white/90">
-            {mockBreaking.headline}
-          </p>
-          <span className="ml-auto hidden text-xs text-white/60 sm:inline">
-            Vercel Daily
-          </span>
-        </div>
-      </section>
+      <Suspense fallback={<div>Loading...</div>}>
+        <BreakingNewsBanner />
+      </Suspense>
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 py-10 sm:py-14">
