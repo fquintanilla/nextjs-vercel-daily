@@ -1,9 +1,19 @@
 import Link from "next/link";
 import Image from "next/image";
+import { connection } from "next/server";
+import { Suspense } from "react";
+
+async function CopyrightYear() {
+  await connection(); // Opt out of prerendering - Date.now() needs request time
+  const year = new Date().getFullYear();
+  return (
+    <div className="mt-10 flex flex-col gap-2 border-t border-neutral-200 pt-6 text-sm text-neutral-600 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {year} The Vercel Daily. All rights reserved.</p>
+    </div>
+  );
+}
 
 export default function Footer() {
-  const year = new Date().getFullYear();
-
   return (
     <footer className="border-t border-neutral-200 bg-white">
       <div className="mx-auto max-w-6xl px-4 py-10">
@@ -45,10 +55,9 @@ export default function Footer() {
             </a>
           </div>
         </div>
-
-        <div className="mt-10 flex flex-col gap-2 border-t border-neutral-200 pt-6 text-sm text-neutral-600 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {year} The Vercel Daily. All rights reserved.</p>
-        </div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <CopyrightYear />
+        </Suspense>
       </div>
     </footer>
   );
