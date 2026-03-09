@@ -1,24 +1,25 @@
-// Root layout: wraps ALL pages, provides html/body structure
-// Keep this minimal: no section-specific chrome here
-
 import type { Metadata } from "next";
 import "./globals.css";
+import Header from "@/components/header";
+import Footer from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Next.js Foundations",
-  description: "Learning Next.js patterns",
+  title: {
+    default: "The Vercel Daily",
+    template: "%s • The Vercel Daily",
+  },
+  description: "News and insights for modern web developers.",
 };
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-white text-gray-900">
-        {/* Global providers would go here (theme, auth, etc.) */}
+    <html lang="en" className="h-full">
+      <body className="min-h-dvh bg-white text-neutral-950 antialiased">
+        <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );
