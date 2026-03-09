@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { listArticles } from "@/lib/server/vercel-daily-api";
+import { BLUR_DATA_URL } from "@/lib/constants";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -61,6 +62,7 @@ export default async function FeaturedArticles() {
                   quality={85}
                   fill
                   placeholder="blur"
+                  blurDataURL={BLUR_DATA_URL}
                   className="object-cover transition duration-300 group-hover:scale-[1.02]"
                 />
               </div>
