@@ -5,11 +5,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "images.unsplash.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
         hostname: "i8qy5y6gxkdgdcv9.public.blob.vercel-storage.com",
         pathname: "/**",
       },
