@@ -55,11 +55,12 @@ export default async function FeaturedArticles() {
           >
             <Link href={`/articles/${a.id}`} className="block">
               <div className="relative aspect-[16/10] w-full bg-neutral-100">
-                {/* Note: remote images require next.config remotePatterns */}
                 <Image
                   src={a.image}
                   alt={a.title}
+                  quality={85}
                   fill
+                  placeholder="blur"
                   className="object-cover transition duration-300 group-hover:scale-[1.02]"
                 />
               </div>
