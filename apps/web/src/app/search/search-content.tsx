@@ -6,22 +6,12 @@ import type { CategoryItem } from "@/lib/server/vercel-daily-api";
 import { searchArticles } from "../actions/search";
 import { SearchForm } from "./search-form";
 import { SearchLoading } from "./search-loading";
-import { ArticleCard } from "./article-card";
 import { SearchEmptyState } from "./search-empty-state";
+import { ArticleCard, type ArticleCardData } from "@/components/article-card";
 
 type SearchContentProps = {
   categories: CategoryItem[];
-  defaultArticles: ArticleCard[];
-};
-
-type ArticleCard = {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  category: string;
-  image: string;
-  publishedAt: string;
+  defaultArticles: ArticleCardData[];
 };
 
 const MIN_CHARS_FOR_AUTO_SEARCH = 3;
@@ -37,7 +27,7 @@ export default function SearchContent({
 
   const [query, setQuery] = useState(q);
   const [category, setCategory] = useState(categoryParam);
-  const [results, setResults] = useState<ArticleCard[]>([]);
+  const [results, setResults] = useState<ArticleCardData[]>([]);
   const [hasSearched, setHasSearched] = useState(!!q || !!categoryParam);
   const [isLoading, setIsLoading] = useState(false);
   const [showDefault, setShowDefault] = useState(!q && !categoryParam);
@@ -156,7 +146,10 @@ export default function SearchContent({
                   <ArticleCard
                     key={article.id}
                     article={article}
-                    categories={categories}
+                    categoryLabel={
+                      categories.find((c) => c.slug === article.category)
+                        ?.name ?? article.category
+                    }
                   />
                 ))
               )}
@@ -174,7 +167,10 @@ export default function SearchContent({
                 <ArticleCard
                   key={article.id}
                   article={article}
-                  categories={categories}
+                  categoryLabel={
+                    categories.find((c) => c.slug === article.category)?.name ??
+                    article.category
+                  }
                 />
               ))}
             </div>
