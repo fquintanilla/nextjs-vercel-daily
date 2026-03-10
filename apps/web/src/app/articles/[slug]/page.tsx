@@ -12,6 +12,8 @@ import { SubscriptionContent } from "./subscription-content";
 import { ArticleBreadcrumb } from "./article-breadcrumb";
 import { ArticleMeta } from "./article-meta";
 import { ArticleHeroImage } from "./article-hero-image";
+import { getBaseUrl } from "@/lib/get-base-url";
+import { Metadata } from "next";
 
 export async function generateStaticParams() {
   const { articles } = await listArticles();
@@ -23,6 +25,53 @@ export async function generateStaticParams() {
 type Props = {
   params: Promise<{ slug: string }>;
 };
+
+type MetadataProps = {
+  params: Promise<{ slug: string }>;
+};
+export async function generateMetadata({
+  params,
+}: MetadataProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await getArticle(slug);
+  if (!article) {
+    return {
+      title: "Article Not Found",
+    };
+  }
+  const baseUrl = getBaseUrl();
+  const articleUrl = `${baseUrl}/articles/${article.slug}`;
+  const ogImage = article.image ? article.image : undefined;
+  return {
+    title: article.title ?? "Article",
+    description: article.excerpt ?? undefined,
+    openGraph: {
+      title: article.title ?? undefined,
+      description: article.excerpt ?? undefined,
+      url: articleUrl,
+      siteName: "The Vercel Daily",
+      images: ogImage
+        ? [
+            {
+              url: ogImage,
+              width: 1200,
+              height: 630,
+              alt: article.title ?? undefined,
+            },
+          ]
+        : undefined,
+      type: "article",
+      publishedTime: article.publishedAt ?? undefined,
+      authors: article.author?.name ? [article.author.name] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title ?? undefined,
+      description: article.excerpt ?? undefined,
+      images: ogImage ? [ogImage] : undefined,
+    },
+  };
+}
 
 export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;

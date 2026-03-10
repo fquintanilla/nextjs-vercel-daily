@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
       revalidate: 86400, // 24 hours
       expire: 604800, // 1 week
     },
+    publicationConfig: {
+      stale: 3600, // 1 hour
+      revalidate: 86400, // 24 hours
+      expire: 604800, // 1 week
+    },
   },
 };
 

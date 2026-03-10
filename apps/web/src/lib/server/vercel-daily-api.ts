@@ -285,3 +285,49 @@ export async function createSubscription(): Promise<CreateSubscriptionResult> {
     tokenFromHeader,
   };
 }
+
+// Publication config (for SEO, features, social links)
+export type PublicationConfig = {
+  publicationName: string;
+  language: string;
+  features: {
+    newsletter: boolean;
+    bookmarks: boolean;
+    comments: boolean;
+    darkMode: boolean;
+    searchSuggestions: boolean;
+  };
+  socialLinks: {
+    twitter?: string;
+    github?: string;
+    discord?: string;
+  };
+  seo: {
+    defaultTitle: string;
+    titleTemplate: string;
+    defaultDescription: string;
+  };
+};
+
+type PublicationConfigResponse =
+  | { success: true; data: PublicationConfig }
+  | { success: false; error?: string };
+
+export async function getPublicationConfig(): Promise<PublicationConfig | null> {
+  "use cache";
+  cacheLife("publicationConfig");
+
+  const res = await fetch(`${API_BASE}/publication/config`, {
+    method: "GET",
+    headers: {
+      "x-vercel-protection-bypass": getToken(),
+    },
+  });
+
+  if (!res.ok) return null;
+
+  const json = (await res.json()) as PublicationConfigResponse;
+  if (!json.success || !json.data?.seo) return null;
+
+  return json.data;
+}
