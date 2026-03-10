@@ -153,7 +153,11 @@ export default function SearchContent({
                 </p>
               ) : (
                 results.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
+                  <ArticleCard
+                    key={article.id}
+                    article={article}
+                    categories={categories}
+                  />
                 ))
               )}
             </div>
@@ -167,7 +171,11 @@ export default function SearchContent({
             </h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {results.slice(0, 5).map((article) => (
-                <ArticleCard key={article.id} article={article} />
+                <ArticleCard
+                  key={article.id}
+                  article={article}
+                  categories={categories}
+                />
               ))}
             </div>
           </div>

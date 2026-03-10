@@ -48,6 +48,7 @@ export function SearchForm({
             onChange={(e) => onCategoryChange(e.target.value)}
             className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-neutral-950 shadow-sm transition focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400/20"
           >
+            <option value="">All</option>
             {categories.map((opt) => (
               <option key={opt.name || "all"} value={opt.slug}>
                 {opt.name}
