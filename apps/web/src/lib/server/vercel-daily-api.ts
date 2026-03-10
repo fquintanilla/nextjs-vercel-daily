@@ -136,6 +136,9 @@ export async function getArticle(idOrSlug: string): Promise<Article | null> {
 export async function getTrendingArticles(params?: {
   excludeIds?: string[];
 }): Promise<Article[]> {
+  "use cache";
+  cacheLife("featuredArticles");
+
   const url = new URL(`${API_BASE}/articles/trending`);
 
   if (params?.excludeIds?.length) {
