@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import Image from "next/image";
 import { RichContent } from "@/components/rich-content";
+import { notFound } from "next/navigation";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -14,6 +15,11 @@ type Props = {
 async function ArticleContent({ params }: Props) {
   const { slug } = await params;
   const article = await getArticle(slug);
+
+  if (!article) {
+    notFound();
+  }
+
   const isSubscribed = false;
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
