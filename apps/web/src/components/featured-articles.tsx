@@ -1,17 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { listArticles } from "@/lib/server/vercel-daily-api";
+import { getCategories, listArticles } from "@/lib/server/vercel-daily-api";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { formatDate } from "@/lib/format-date";
-
-function categoryLabel(category: string) {
-  switch (category) {
-    case "company-news":
-      return "Company News";
-    default:
-      return category.charAt(0).toUpperCase() + category.slice(1);
-  }
-}
 
 export default async function FeaturedArticles() {
   const { articles } = await listArticles({
@@ -21,6 +12,9 @@ export default async function FeaturedArticles() {
   });
 
   if (!articles.length) return null;
+
+  const categories = await getCategories();
+  const slugToName = new Map(categories.map((c) => [c.slug, c.name]));
 
   return (
     <section className="mx-auto max-w-6xl px-4 pb-14">
@@ -62,7 +56,7 @@ export default async function FeaturedArticles() {
               <div className="p-4">
                 <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600">
                   <span className="rounded-full bg-neutral-100 px-2 py-1 font-semibold text-neutral-700">
-                    {categoryLabel(a.category)}
+                    {slugToName.get(a.category) ?? a.category}
                   </span>
                   <span aria-hidden="true" className="text-neutral-300">
                     •

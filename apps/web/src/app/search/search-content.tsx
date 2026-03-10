@@ -6,6 +6,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatDate } from "@/lib/format-date";
 import { BLUR_DATA_URL } from "@/lib/constants";
+import type { CategoryItem } from "@/lib/server/vercel-daily-api";
+
+type SearchContentProps = {
+  categories: CategoryItem[];
+};
 
 type ArticleCard = {
   id: string;
@@ -17,15 +22,6 @@ type ArticleCard = {
   publishedAt: string;
 };
 
-const CATEGORIES = [
-  { value: "", label: "All categories" },
-  { value: "changelog", label: "Changelog" },
-  { value: "engineering", label: "Engineering" },
-  { value: "customers", label: "Customers" },
-  { value: "company-news", label: "Company News" },
-  { value: "community", label: "Community" },
-] as const;
-
 const MIN_CHARS_FOR_AUTO_SEARCH = 3;
 
 function getDefaultRecentArticles(): ArticleCard[] {
@@ -36,7 +32,7 @@ function getSearchResults(_query: string, _category: string): ArticleCard[] {
   return [];
 }
 
-export default function SearchContent() {
+export default function SearchContent({ categories }: SearchContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const q = searchParams.get("q") ?? "";
@@ -162,9 +158,9 @@ export default function SearchContent() {
               onChange={(e) => handleCategoryChange(e.target.value)}
               className="w-full rounded-xl border border-neutral-200 bg-white px-4 py-2.5 text-neutral-950 shadow-sm transition focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400/20"
             >
-              {CATEGORIES.map((opt) => (
-                <option key={opt.value || "all"} value={opt.value}>
-                  {opt.label}
+              {categories.map((opt) => (
+                <option key={opt.name || "all"} value={opt.slug}>
+                  {opt.name}
                 </option>
               ))}
             </select>

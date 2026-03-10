@@ -1,6 +1,5 @@
-import { cacheLife, cacheTag, revalidateTag } from "next/cache";
-
 import "server-only";
+import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 
 const API_BASE = "https://vercel-daily-news-api.vercel.app/api";
 
@@ -329,5 +328,31 @@ export async function getPublicationConfig(): Promise<PublicationConfig | null> 
   const json = (await res.json()) as PublicationConfigResponse;
   if (!json.success || !json.data?.seo) return null;
 
+  return json.data;
+}
+
+export type CategoryItem = {
+  slug: string;
+  name: string;
+  articleCount: number;
+};
+
+type CategoriesResponse =
+  | { success: true; data: CategoryItem[] }
+  | { success: false; error?: string };
+
+export async function getCategories(): Promise<CategoryItem[]> {
+  "use cache";
+  cacheLife("categories");
+
+  const res = await fetch(`${API_BASE}/categories`, {
+    method: "GET",
+    headers: {
+      "x-vercel-protection-bypass": getToken(),
+    },
+  });
+  if (!res.ok) return [];
+  const json = (await res.json()) as CategoriesResponse;
+  if (!json.success || !Array.isArray(json.data)) return [];
   return json.data;
 }

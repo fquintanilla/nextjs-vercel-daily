@@ -4,10 +4,13 @@ import type { Article } from "@/lib/server/vercel-daily-api";
 
 type Props = {
   trending: Article[];
+  categories: { slug: string; name: string }[];
 };
 
-export default function TrendingArticles({ trending }: Props) {
+export default function TrendingArticles({ trending, categories }: Props) {
   if (!trending.length) return null;
+
+  const slugToName = new Map(categories.map((c) => [c.slug, c.name]));
 
   return (
     <aside className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
@@ -31,7 +34,8 @@ export default function TrendingArticles({ trending }: Props) {
                 {a.title}
               </p>
               <p className="mt-1 text-xs text-neutral-600">
-                {formatDate(a.publishedAt)} • {a.category}
+                {formatDate(a.publishedAt)} •{" "}
+                {slugToName.get(a.category) ?? a.category}
               </p>
             </Link>
           </li>

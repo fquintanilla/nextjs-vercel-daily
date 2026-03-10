@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import SearchContent from "./search-content";
+import { getCategories } from "@/lib/server/vercel-daily-api";
 
 function SearchFallback() {
   return (
@@ -28,10 +29,15 @@ function SearchFallback() {
   );
 }
 
-export default function SearchPage() {
+async function SearchWithCategories() {
+  const categories = await getCategories();
+  return <SearchContent categories={categories} />;
+}
+
+export default async function SearchPage() {
   return (
     <Suspense fallback={<SearchFallback />}>
-      <SearchContent />
+      <SearchWithCategories />
     </Suspense>
   );
 }

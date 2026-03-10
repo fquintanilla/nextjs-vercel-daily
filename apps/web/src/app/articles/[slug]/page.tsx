@@ -2,6 +2,7 @@ import TrendingArticles from "@/components/trending-articles";
 
 import {
   getArticle,
+  getCategories,
   getTrendingArticles,
   listArticles,
 } from "@/lib/server/vercel-daily-api";
@@ -29,6 +30,7 @@ type Props = {
 type MetadataProps = {
   params: Promise<{ slug: string }>;
 };
+
 export async function generateMetadata({
   params,
 }: MetadataProps): Promise<Metadata> {
@@ -81,7 +83,14 @@ export default async function ArticleDetailPage({ params }: Props) {
     notFound();
   }
 
-  const trending = await getTrendingArticles({ excludeIds: [article.id] });
+  const [trending, categories] = await Promise.all([
+    getTrendingArticles({ excludeIds: [article.id] }),
+    getCategories(),
+  ]);
+
+  const categoryLabel =
+    categories.find((c) => c.slug === article.category)?.name ??
+    article.category;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
@@ -90,7 +99,7 @@ export default async function ArticleDetailPage({ params }: Props) {
           <ArticleBreadcrumb currentTitle={article.title} />
 
           <ArticleMeta
-            category={article.category}
+            category={categoryLabel}
             publishedAt={article.publishedAt ?? ""}
             authorName={article.author?.name}
           />
@@ -121,7 +130,7 @@ export default async function ArticleDetailPage({ params }: Props) {
         </article>
 
         <aside className="lg:pt-2">
-          <TrendingArticles trending={trending} />
+          <TrendingArticles trending={trending} categories={categories} />
         </aside>
       </div>
     </main>
