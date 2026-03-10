@@ -1,6 +1,20 @@
 import { Suspense } from "react";
 import SearchContent from "./search-content";
-import { getCategories } from "@/lib/server/vercel-daily-api";
+import { getCategories, listArticles } from "@/lib/server/vercel-daily-api";
+
+function articlesToCards(
+  articles: Awaited<ReturnType<typeof listArticles>>["articles"],
+) {
+  return articles.map((a) => ({
+    id: a.id,
+    title: a.title,
+    slug: a.slug,
+    excerpt: a.excerpt,
+    category: a.category,
+    image: a.image,
+    publishedAt: a.publishedAt,
+  }));
+}
 
 function SearchFallback() {
   return (
@@ -30,8 +44,14 @@ function SearchFallback() {
 }
 
 async function SearchWithCategories() {
-  const categories = await getCategories();
-  return <SearchContent categories={categories} />;
+  const [categories, { articles }] = await Promise.all([
+    getCategories(),
+    listArticles({ limit: 12 }),
+  ]);
+  const defaultArticles = articlesToCards(articles);
+  return (
+    <SearchContent categories={categories} defaultArticles={defaultArticles} />
+  );
 }
 
 export default async function SearchPage() {
