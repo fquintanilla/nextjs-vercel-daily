@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 
 import "server-only";
 
@@ -23,6 +23,21 @@ export type BreakingNewsItem = {
 type BreakingNewsResponse =
   | { success: true; data: BreakingNewsItem }
   | { success: false; error?: string };
+
+// Subscription types
+export type SubscriptionStatus = "active" | "inactive";
+export type Subscription = {
+  token: string;
+  status: SubscriptionStatus;
+  subscribedAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+type SubscriptionSuccessResponse = {
+  success: true;
+  data: Subscription;
+};
+type SubscriptionResponse = SubscriptionSuccessResponse | ApiErrorResponse;
 
 // Because the endpoint “may return a different item on each request”,
 // it must use cache: "no-store" so Next.js doesn’t cache a random value and serve it repeatedly.
@@ -164,3 +179,106 @@ export type ArticleContentBlock =
   | { type: "unordered-list"; items: string[] }
   | { type: "ordered-list"; items: string[] }
   | { type: "blockquote"; text: string };
+
+async function subscriptionFetch(
+  path: string,
+  options: {
+    method: "GET" | "POST" | "DELETE";
+    subscriptionToken: string;
+  },
+): Promise<Response> {
+  const url = `${API_BASE}${path}`;
+  return fetch(url, {
+    method: options.method,
+    headers: {
+      "x-vercel-protection-bypass": getToken(),
+      "x-subscription-token": options.subscriptionToken,
+    },
+    cache: "no-store",
+  });
+}
+
+export async function getSubscription(
+  subscriptionToken: string,
+): Promise<Subscription | null> {
+  "use cache";
+  cacheLife("subscription");
+  cacheTag("subscription", `subscription-${subscriptionToken}`);
+
+  const res = await subscriptionFetch("/subscription", {
+    method: "GET",
+    subscriptionToken,
+  });
+
+  if (!res.ok) return null;
+
+  const json = (await res.json()) as SubscriptionResponse;
+  if (!json.success) return null;
+
+  return json.data;
+}
+
+export async function activateSubscription(
+  subscriptionToken: string,
+): Promise<Subscription | null> {
+  const res = await subscriptionFetch("/subscription", {
+    method: "POST",
+    subscriptionToken,
+  });
+
+  if (!res.ok) return null;
+
+  const json = (await res.json()) as SubscriptionResponse;
+  if (!json.success) return null;
+
+  return json.data;
+}
+
+export async function deactivateSubscription(
+  subscriptionToken: string,
+): Promise<Subscription | null> {
+  const res = await subscriptionFetch("/subscription", {
+    method: "DELETE",
+    subscriptionToken,
+  });
+
+  if (!res.ok) return null;
+
+  const json = (await res.json()) as SubscriptionResponse;
+  if (!json.success) return null;
+
+  revalidateTag(`subscription-${subscriptionToken}`, "max");
+
+  return json.data;
+}
+
+export type CreateSubscriptionResult =
+  | { success: true; data: Subscription; tokenFromHeader: string | null }
+  | { success: false; error: ApiErrorResponse["error"] };
+
+export async function createSubscription(): Promise<CreateSubscriptionResult> {
+  const res = await fetch(`${API_BASE}/subscription/create`, {
+    method: "POST",
+    headers: {
+      "x-vercel-protection-bypass": getToken(),
+    },
+    cache: "no-store",
+  });
+
+  const json = (await res.json()) as SubscriptionResponse;
+
+  if (!res.ok || !json.success) {
+    return {
+      success: false,
+      error: json.success === false ? json.error : undefined,
+    };
+  }
+
+  const tokenFromHeader = res.headers.get("x-subscription-token");
+
+  return {
+    success: true,
+    data: json.data,
+    tokenFromHeader,
+  };
+}

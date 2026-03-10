@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import BreakingNewsBanner from "@/components/breaking-news-banner";
 import { Suspense } from "react";
@@ -31,13 +30,6 @@ export default async function HomePage() {
               >
                 Browse articles
               </Link>
-
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400"
-              >
-                Subscribe
-              </button>
             </div>
           </div>
 

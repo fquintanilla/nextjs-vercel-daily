@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
   },
   cacheComponents: true, // Top-level in Next.js 16.1.x+
   cacheLife: {
+    subscription: {
+      stale: 600, // 10 minutes
+      revalidate: 900, // 1 minutes
+      expire: 86400, // 24 hours
+    },
     blog: {
       stale: 3600, // 1 hour
       revalidate: 86400, // 24 hours

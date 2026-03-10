@@ -7,6 +7,8 @@ import { Suspense } from "react";
 import Image from "next/image";
 import { RichContent } from "@/components/rich-content";
 import { notFound } from "next/navigation";
+import { getSubscriptionFromCookie } from "@/lib/server/subscription";
+import { SubscribeButton } from "@/components/subscribe-button";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -20,7 +22,9 @@ async function ArticleContent({ params }: Props) {
     notFound();
   }
 
-  const isSubscribed = false;
+  const subscription = await getSubscriptionFromCookie();
+  const isSubscribed = subscription?.status === "active";
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
@@ -105,6 +109,8 @@ async function ArticleContent({ params }: Props) {
             {isSubscribed ? (
               <div className="prose prose-neutral max-w-none">
                 <RichContent content={article?.content ?? []} />
+
+                <SubscribeButton isSubscribed={isSubscribed} />
               </div>
             ) : (
               <div className="space-y-6">
@@ -119,12 +125,7 @@ async function ArticleContent({ params }: Props) {
                   </p>
 
                   <div className="mt-4 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-xl bg-neutral-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-400"
-                    >
-                      Subscribe
-                    </button>
+                    <SubscribeButton isSubscribed={isSubscribed} />
 
                     <Link
                       href="/"
