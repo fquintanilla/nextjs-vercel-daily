@@ -1,20 +1,30 @@
+// apps/web/src/app/articles/[slug]/page.tsx
 import TrendingArticles from "@/components/trending-articles";
 import { BLUR_DATA_URL } from "@/lib/constants";
 import { formatDate } from "@/lib/format-date";
-import { getArticle } from "@/lib/server/vercel-daily-api";
+import {
+  getArticle,
+  getTrendingArticles,
+  listArticles,
+} from "@/lib/server/vercel-daily-api";
 import Link from "next/link";
 import { Suspense } from "react";
 import Image from "next/image";
-import { RichContent } from "@/components/rich-content";
 import { notFound } from "next/navigation";
-import { getSubscriptionFromCookie } from "@/lib/server/subscription";
-import { SubscribeButton } from "@/components/subscribe-button";
+import { SubscriptionContent } from "./subscription-content";
+
+export async function generateStaticParams() {
+  const { articles } = await listArticles();
+  return articles.map((article) => ({
+    slug: article.slug,
+  }));
+}
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-async function ArticleContent({ params }: Props) {
+export default async function ArticleDetailPage({ params }: Props) {
   const { slug } = await params;
   const article = await getArticle(slug);
 
@@ -22,14 +32,13 @@ async function ArticleContent({ params }: Props) {
     notFound();
   }
 
-  const subscription = await getSubscriptionFromCookie();
-  const isSubscribed = subscription?.status === "active";
+  const trending = await getTrendingArticles({ excludeIds: [article.id] });
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
         <article>
-          {/* Breadcrumb */}
+          {/* Breadcrumb — static */}
           <nav
             aria-label="Breadcrumb"
             className="mb-6 text-sm text-neutral-600"
@@ -58,43 +67,43 @@ async function ArticleContent({ params }: Props) {
                 /
               </li>
               <li className="truncate font-semibold text-neutral-900">
-                {article?.title}
+                {article.title}
               </li>
             </ol>
           </nav>
 
-          {/* Meta */}
+          {/* Meta — static */}
           <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600">
             <span className="rounded-full bg-neutral-100 px-2 py-1 font-semibold text-neutral-700">
-              {article?.category}
+              {article.category}
             </span>
             <span aria-hidden="true" className="text-neutral-300">
               •
             </span>
-            <time>{formatDate(article?.publishedAt ?? "")}</time>
+            <time>{formatDate(article.publishedAt ?? "")}</time>
             <span aria-hidden="true" className="text-neutral-300">
               •
             </span>
             <span className="font-semibold text-neutral-700">
-              {article?.author?.name}
+              {article.author?.name}
             </span>
           </div>
 
-          {/* Title */}
+          {/* Title — static */}
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
-            {article?.title}
+            {article.title}
           </h1>
 
-          {/* Excerpt */}
+          {/* Excerpt — static */}
           <p className="mt-3 text-base leading-relaxed text-neutral-600">
-            {article?.excerpt}
+            {article.excerpt}
           </p>
 
-          {/* Hero image (static placeholder) */}
+          {/* Hero image — static */}
           <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50">
             <Image
-              src={article?.image ?? ""}
-              alt={article?.title ?? ""}
+              src={article.image ?? ""}
+              alt={article.title ?? ""}
               quality={85}
               width={1600}
               height={900}
@@ -104,57 +113,23 @@ async function ArticleContent({ params }: Props) {
             />
           </div>
 
-          {/* Content */}
+          {/* Only this block is dynamic (subscription + paywall/content + button) */}
           <div className="mt-8">
-            {isSubscribed ? (
-              <div className="prose prose-neutral max-w-none">
-                <RichContent content={article?.content ?? []} />
-
-                <SubscribeButton isSubscribed={isSubscribed} />
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Paywall */}
-                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
-                  <h2 className="text-lg font-semibold tracking-tight text-neutral-950">
-                    Subscribe to continue reading
-                  </h2>
-                  <p className="mt-2 text-sm text-neutral-600">
-                    This article is for subscribers. Subscribe to unlock the
-                    full story.
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <SubscribeButton isSubscribed={isSubscribed} />
-
-                    <Link
-                      href="/"
-                      className="inline-flex items-center justify-center rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-400"
-                    >
-                      Back to home
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
+            <Suspense
+              fallback={
+                <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 animate-pulse h-32" />
+              }
+            >
+              <SubscriptionContent article={article} />
+            </Suspense>
           </div>
         </article>
 
-        {/* Trending */}
+        {/* Trending — static */}
         <aside className="lg:pt-2">
-          <Suspense fallback={<div>Loading...</div>}>
-            <TrendingArticles params={params} />
-          </Suspense>
+          <TrendingArticles trending={trending} />
         </aside>
       </div>
     </main>
-  );
-}
-
-export default async function ArticleDetailPage({ params }: Props) {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ArticleContent params={params} />
-    </Suspense>
   );
 }

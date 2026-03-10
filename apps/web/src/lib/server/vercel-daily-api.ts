@@ -140,6 +140,9 @@ type ArticleResponse = { success: true; data: Article } | ApiErrorResponse;
 type TrendingResponse = { success: true; data: Article[] } | ApiErrorResponse;
 
 export async function getArticle(idOrSlug: string): Promise<Article | null> {
+  "use cache";
+  cacheLife("article");
+
   const json = await apiGet<ArticleResponse>(
     `${API_BASE}/articles/${encodeURIComponent(idOrSlug)}`,
   );

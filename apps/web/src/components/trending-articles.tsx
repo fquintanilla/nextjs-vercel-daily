@@ -1,14 +1,12 @@
 import Link from "next/link";
-import { getTrendingArticles } from "@/lib/server/vercel-daily-api";
 import { formatDate } from "@/lib/format-date";
+import type { Article } from "@/lib/server/vercel-daily-api";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  trending: Article[];
 };
 
-export default async function TrendingArticles({ params }: Props) {
-  const { slug } = await params;
-  const trending = await getTrendingArticles({ excludeIds: [slug] });
+export default function TrendingArticles({ trending }: Props) {
   if (!trending.length) return null;
 
   return (
