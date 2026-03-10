@@ -46,7 +46,7 @@ export default async function FeaturedArticles() {
             key={a.id}
             className="group overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:shadow-md"
           >
-            <Link href={`/articles/${a.id}`} className="block">
+            <Link href={`/articles/${a.slug}`} className="block">
               <div className="relative aspect-[16/10] w-full bg-neutral-100">
                 <Image
                   src={a.image}
