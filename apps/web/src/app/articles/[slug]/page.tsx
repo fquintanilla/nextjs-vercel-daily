@@ -1,18 +1,23 @@
 import TrendingArticles from "@/components/trending-articles";
+import { BLUR_DATA_URL } from "@/lib/constants";
+import { formatDate } from "@/lib/format-date";
+import { getArticle } from "@/lib/server/vercel-daily-api";
 import Link from "next/link";
 import { Suspense } from "react";
+import Image from "next/image";
+import { RichContent } from "@/components/rich-content";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export default async function ArticleDetailPage({ params }: Props) {
+async function ArticleContent({ params }: Props) {
+  const { slug } = await params;
+  const article = await getArticle(slug);
   const isSubscribed = false;
-
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-        {/* Article */}
         <article>
           {/* Breadcrumb */}
           <nav
@@ -43,8 +48,7 @@ export default async function ArticleDetailPage({ params }: Props) {
                 /
               </li>
               <li className="truncate font-semibold text-neutral-900">
-                Vercel Domains overhauled with instant search and at-cost
-                pricing
+                {article?.title}
               </li>
             </ol>
           </nav>
@@ -52,36 +56,40 @@ export default async function ArticleDetailPage({ params }: Props) {
           {/* Meta */}
           <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600">
             <span className="rounded-full bg-neutral-100 px-2 py-1 font-semibold text-neutral-700">
-              Changelog
+              {article?.category}
             </span>
             <span aria-hidden="true" className="text-neutral-300">
               •
             </span>
-            <time dateTime="2026-01-15T09:00:00Z">Jan 15, 2026</time>
+            <time>{formatDate(article?.publishedAt ?? "")}</time>
             <span aria-hidden="true" className="text-neutral-300">
               •
             </span>
             <span className="font-semibold text-neutral-700">
-              Rhys Sullivan
+              {article?.author?.name}
             </span>
           </div>
 
           {/* Title */}
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-neutral-950 sm:text-4xl">
-            Vercel Domains overhauled with instant search and at-cost pricing
+            {article?.title}
           </h1>
 
           {/* Excerpt */}
           <p className="mt-3 text-base leading-relaxed text-neutral-600">
-            We&apos;ve rebuilt Vercel Domains end to end, making it faster,
-            simpler, and more affordable...
+            {article?.excerpt}
           </p>
 
           {/* Hero image (static placeholder) */}
           <div className="mt-6 overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50">
-            <img
-              src="https://placehold.co/1600x900/png"
-              alt="Article cover"
+            <Image
+              src={article?.image ?? ""}
+              alt={article?.title ?? ""}
+              quality={85}
+              width={1600}
+              height={900}
+              placeholder="blur"
+              blurDataURL={BLUR_DATA_URL}
               className="h-full w-full object-cover"
             />
           </div>
@@ -90,50 +98,10 @@ export default async function ArticleDetailPage({ params }: Props) {
           <div className="mt-8">
             {isSubscribed ? (
               <div className="prose prose-neutral max-w-none">
-                <p>
-                  We&apos;ve rebuilt Vercel Domains end to end, making it
-                  faster, simpler, and more affordable. The new experience
-                  focuses on instant search, clean navigation, and transparent
-                  pricing.
-                </p>
-
-                <h2>What changed</h2>
-                <ul>
-                  <li>Instant domain search with improved relevance</li>
-                  <li>Simplified management flows for records and renewals</li>
-                  <li>At-cost pricing with clearer breakdowns</li>
-                </ul>
-
-                <blockquote>
-                  “Domains should feel effortless — search, buy, configure, and
-                  ship.”
-                </blockquote>
-
-                <h2>Why it matters</h2>
-                <p>
-                  Better search reduces time-to-purchase, while simpler
-                  management helps teams move faster without context switching.
-                  Transparent pricing reduces surprises and builds trust.
-                </p>
-
-                <h2>What&apos;s next</h2>
-                <p>
-                  We&apos;re expanding bulk workflows and adding more advanced
-                  DNS tooling for power users. Stay tuned.
-                </p>
+                <RichContent content={article?.content ?? []} />
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Teaser */}
-                <div className="prose prose-neutral max-w-none">
-                  <p>
-                    We&apos;ve rebuilt Vercel Domains end to end, making it
-                    faster, simpler, and more affordable. The new experience
-                    focuses on instant search, clean navigation, and transparent
-                    pricing.
-                  </p>
-                </div>
-
                 {/* Paywall */}
                 <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6">
                   <h2 className="text-lg font-semibold tracking-tight text-neutral-950">
@@ -159,13 +127,6 @@ export default async function ArticleDetailPage({ params }: Props) {
                       Back to home
                     </Link>
                   </div>
-
-                  <div className="mt-4 text-xs text-neutral-500">
-                    Already subscribed?{" "}
-                    <span className="underline underline-offset-4">
-                      Sign in
-                    </span>
-                  </div>
                 </div>
               </div>
             )}
@@ -180,5 +141,13 @@ export default async function ArticleDetailPage({ params }: Props) {
         </aside>
       </div>
     </main>
+  );
+}
+
+export default async function ArticleDetailPage({ params }: Props) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ArticleContent params={params} />
+    </Suspense>
   );
 }

@@ -60,6 +60,7 @@ export type Article = {
   publishedAt: string;
   featured: boolean;
   tags: string[];
+  content?: ArticleContentBlock[];
 };
 
 type ArticlesResponse = {
@@ -155,6 +156,8 @@ export type ArticleCategory =
 
 export type ArticleContentBlock =
   | { type: "paragraph"; text: string }
-  | { type: "heading"; text: string }
-  | { type: "quote"; text: string }
-  | { type: "list"; items: string[] };
+  | { type: "heading"; level: 2 | 3; text: string }
+  | { type: "image"; src: string; alt: string }
+  | { type: "unordered-list"; items: string[] }
+  | { type: "ordered-list"; items: string[] }
+  | { type: "blockquote"; text: string };
