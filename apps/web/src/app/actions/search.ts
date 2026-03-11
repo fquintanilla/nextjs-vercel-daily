@@ -18,8 +18,8 @@ export async function searchArticles(
   category: string,
 ): Promise<SearchArticleCard[]> {
   const { articles } = await listArticles({
-    search: query.trim() || undefined,
-    category: (category || undefined) as Article["category"] | undefined,
+    search: query.trim(),
+    category: category as Article["category"] | undefined,
     limit: 12,
   });
   return articles.map((a) => ({
