@@ -132,6 +132,8 @@ export async function listArticles(params?: {
   if (!json || !("success" in json) || json.success === false) {
     return { articles: [] };
   }
+
+  console.log("*** listArticles endpoint response ***", params);
   return { articles: json.data, meta: json.meta };
 }
 
