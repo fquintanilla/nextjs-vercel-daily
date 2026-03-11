@@ -104,7 +104,13 @@ export default function SearchContent({
   const handleCategoryChange = (value: string) => {
     setCategory(value);
     updateUrl(query, value);
-    runSearch(query, value);
+    if (query.length >= MIN_CHARS_FOR_AUTO_SEARCH || value) {
+      runSearch(query, value);
+    } else if (!value) {
+      setShowDefault(true);
+      setHasSearched(false);
+      setResults(defaultArticles);
+    }
   };
 
   return (
