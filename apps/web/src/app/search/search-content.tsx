@@ -81,7 +81,6 @@ export default function SearchContent({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateUrl(query, category);
-    runSearch(query, category);
   };
 
   const handleQueryChange = (value: string) => {
@@ -90,7 +89,6 @@ export default function SearchContent({
     if (value.length >= MIN_CHARS_FOR_AUTO_SEARCH) {
       debounceRef.current = setTimeout(() => {
         updateUrl(value, category);
-        runSearch(value, category);
         debounceRef.current = null;
       }, 300);
     } else if (!value && !category) {
@@ -104,13 +102,6 @@ export default function SearchContent({
   const handleCategoryChange = (value: string) => {
     setCategory(value);
     updateUrl(query, value);
-    if (query.length >= MIN_CHARS_FOR_AUTO_SEARCH || value) {
-      runSearch(query, value);
-    } else if (!value) {
-      setShowDefault(true);
-      setHasSearched(false);
-      setResults(defaultArticles);
-    }
   };
 
   return (
