@@ -44,16 +44,6 @@ export default function Footer() {
               Search
             </Link>
           </div>
-
-          <div className="grid gap-2 text-sm">
-            <p className="font-semibold text-neutral-900">Legal</p>
-            <a href="#" className="text-neutral-600 hover:text-neutral-900">
-              Privacy
-            </a>
-            <a href="#" className="text-neutral-600 hover:text-neutral-900">
-              Terms
-            </a>
-          </div>
         </div>
         <Suspense fallback={<div>Loading...</div>}>
           <CopyrightYear />

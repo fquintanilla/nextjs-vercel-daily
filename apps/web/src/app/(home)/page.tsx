@@ -9,7 +9,12 @@ export default async function HomePage() {
       <Suspense
         fallback={
           <section className="border-b border-neutral-200 bg-neutral-950 text-white">
-            <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2"></div>
+            <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-2">
+              <span className="inline-flex items-center rounded-full bg-white/10 px-2 py-1 text-xs font-semibold uppercase tracking-wide">
+                News
+              </span>
+              <p className="truncate text-sm text-white/90">Loading...</p>
+            </div>
           </section>
         }
       >
