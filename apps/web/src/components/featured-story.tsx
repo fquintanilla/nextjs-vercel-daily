@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { listArticles } from "@/lib/server/vercel-daily-api";
 import { BLUR_DATA_URL } from "@/lib/constants";

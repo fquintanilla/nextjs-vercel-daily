@@ -1,10 +1,9 @@
 import { Suspense } from "react";
 import SearchContent from "./search-content";
 import { getCategories, listArticles } from "@/lib/server/vercel-daily-api";
+import { SearchArticleCard } from "../actions/search";
 
-function articlesToCards(
-  articles: Awaited<ReturnType<typeof listArticles>>["articles"],
-) {
+function articlesToCards(articles: SearchArticleCard[]) {
   return articles.map((a) => ({
     id: a.id,
     title: a.title,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { CategoryItem } from "@/lib/server/vercel-daily-api";
 import { searchArticles } from "../actions/search";
@@ -28,43 +28,31 @@ export default function SearchContent({
   const [query, setQuery] = useState(q);
   const [category, setCategory] = useState(categoryParam);
   const [results, setResults] = useState<ArticleCardData[]>([]);
-  const [hasSearched, setHasSearched] = useState(!!q || !!categoryParam);
   const [isLoading, setIsLoading] = useState(false);
-  const [showDefault, setShowDefault] = useState(!q && !categoryParam);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const updateUrl = useCallback(
-    (newQ: string, newCategory: string) => {
-      const params = new URLSearchParams();
-      if (newQ) params.set("q", newQ);
-      if (newCategory) params.set("category", newCategory);
-      router.replace(`/search?${params.toString()}`, { scroll: false });
-    },
-    [router],
-  );
+  const updateUrl = (newQ: string, newCategory: string) => {
+    const params = new URLSearchParams();
+    if (newQ) params.set("q", newQ);
+    if (newCategory) params.set("category", newCategory);
+    router.replace(`/search?${params.toString()}`, { scroll: false });
+  };
 
-  const runSearch = useCallback(
-    async (searchQuery: string, searchCategory: string) => {
-      if (!searchQuery.trim() && !searchCategory) {
-        setResults(defaultArticles);
-        setShowDefault(true);
-        setHasSearched(false);
-        return;
-      }
-      setIsLoading(true);
-      setShowDefault(false);
-      setHasSearched(true);
-      try {
-        const items = await searchArticles(searchQuery, searchCategory);
-        setResults(items);
-      } catch (e) {
-        setResults([]);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [defaultArticles],
-  );
+  const runSearch = async (searchQuery: string, searchCategory: string) => {
+    if (!searchQuery.trim() && !searchCategory) {
+      setResults(defaultArticles);
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const items = await searchArticles(searchQuery, searchCategory);
+      setResults(items);
+    } catch (e) {
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     setQuery(q);
@@ -73,8 +61,6 @@ export default function SearchContent({
       runSearch(q, categoryParam);
     } else {
       setResults(defaultArticles);
-      setShowDefault(true);
-      setHasSearched(false);
     }
   }, [q, categoryParam]);
 
@@ -92,8 +78,6 @@ export default function SearchContent({
         debounceRef.current = null;
       }, 300);
     } else if (!value && !category) {
-      setShowDefault(true);
-      setHasSearched(false);
       setResults(defaultArticles);
       updateUrl("", category);
     }
@@ -125,36 +109,7 @@ export default function SearchContent({
       <section aria-live="polite" className="mt-10">
         {isLoading && <SearchLoading />}
 
-        {!isLoading && showDefault && !hasSearched && (
-          <div>
-            <h2 className="text-lg font-semibold text-neutral-950">
-              Recent articles
-            </h2>
-            <p className="mt-1 text-sm text-neutral-600">
-              When you search or pick a category, results will appear here.
-            </p>
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {results.length === 0 ? (
-                <p className="col-span-full text-sm text-neutral-500">
-                  No recent articles to show. Run a search or choose a category.
-                </p>
-              ) : (
-                results.map((article) => (
-                  <ArticleCard
-                    key={article.id}
-                    article={article}
-                    categoryLabel={
-                      categories.find((c) => c.slug === article.category)
-                        ?.name ?? article.category
-                    }
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {!isLoading && hasSearched && results.length > 0 && (
+        {!isLoading && results.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold text-neutral-950">
               Results (up to 5)
@@ -174,9 +129,7 @@ export default function SearchContent({
           </div>
         )}
 
-        {!isLoading && hasSearched && results.length === 0 && (
-          <SearchEmptyState />
-        )}
+        {!isLoading && results.length === 0 && <SearchEmptyState />}
       </section>
     </main>
   );
