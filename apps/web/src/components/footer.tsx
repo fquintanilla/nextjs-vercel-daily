@@ -2,9 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { cacheLife } from "next/cache";
 
 async function CopyrightYear() {
-  await connection(); // Opt out of prerendering - Date.now() needs request time
+  //await connection(); // Opt out of prerendering - Date.now() needs request time
+  "use cache";
+  cacheLife("hours");
   const year = new Date().getFullYear();
   return (
     <div className="mt-10 flex flex-col gap-2 border-t border-neutral-200 pt-6 text-sm text-neutral-600 sm:flex-row sm:items-center sm:justify-between">
